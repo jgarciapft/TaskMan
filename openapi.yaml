@@ -1,0 +1,303 @@
+openapi: 3.0.3
+info:
+  title: 'TaskMan'
+  version: 1.0.0
+  description: >
+    Una API para la gestión de tareas dentro organizaciones organizadas en proyectos. Se ofrece un tablero Kanban por
+    organización. La definición de tareas es extensible, permitiendo agregar campos adicionales definidos por el usuario
+servers:
+  - url: 'https://ribw.jgarciapft.live/'
+    description: Servidor de producción
+components:
+  securitySchemes:
+    ClaveApiAuth:
+      description: >
+        Todas las operaciones dentro de una organización `/{organización}` están protegidas. Cada organización dispone
+        de su propia clave de API con la que autenticar las peticiones a la API. La clave sólo se mostrará una vez en
+        el momento en el que se crea la organización, por motivos de seguridad no se podrá consultar posteriormente
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    Organizacion:
+      type: object
+      description: >
+        El modelo de una organización que puede suministrar el usuario y que puede ser devuelto sin comprometer la
+        seguridad
+      properties:
+        nombreCompleto:
+          description: El nombre coloquial de la organización. Admite combinación de mayúsculas y minúsculas y espacios
+          type: string
+        nombreRecurso:
+          description: >
+            El nombre del recurso con el que se conoce a la organización y que se puede usar en el path. En minúsculas,
+            sin espacios y sin guiones (-) (se admiten guiones bajos _). Debe ser único entre todas las organizaciones
+            y no puede comenzar por _APP_, puesto que es un espacio de nombres reservado
+          type: string
+      required:
+        - nombreCompleto
+        - nombreRecurso
+    ClaveApi:
+      type: string
+    TareaBase:
+      type: object
+      description: >
+        El modelo básico que puede suministrar un usuario para crear/modificar una tarea. El modelo es extensible con
+        campos definidos por el propio usuario.
+      properties:
+        titulo:
+          type: string
+        descripcion:
+          type: string
+        estado:
+          type: string
+          enum:
+            - abierta
+            - en progreso
+            - lista
+            - archivada
+          default:
+            abierta
+        autor:
+          type: string
+        responsable:
+          type: string
+        prioridad:
+          type: string
+          enum:
+            - muy baja
+            - baja
+            - media
+            - alta
+            - muy alta
+          default:
+            media
+        etiquetas:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+      additionalProperties: true
+      required:
+        - titulo
+        - autor
+        - prioridad
+    Tarea:
+      description: >
+        Definición completa de una tarea extensible. Incluye el identificador de la tarea y del proyecto. Es la
+        representación que se devuelve al usuario tras una consulta
+      allOf:
+        - $ref: '#/components/schemas/TareaBase'
+        - type: object
+          properties:
+            id:
+              type: number
+              minimum: 1
+            proyecto:
+              type: string
+              description: >
+                Un acrónimo del proyecto en el que se encuadra la tarea. Puede contener de 3 a 6 letras y es único
+                dentro de la organización
+              minLength: 3
+              maxLength: 6
+          required:
+            - id
+            - proyecto
+
+  parameters:
+    Organizacion:
+      description: Nombre del recurso de la organización
+      name: organizacion
+      in: path
+      required: true
+      schema:
+        type: string
+    Proyecto:
+      description: Acrónimo del proyecto
+      name: proyecto
+      in: path
+      required: true
+      schema:
+        type: string
+    Tarea:
+      description: Identificador numérico de la tarea
+      name: tarea
+      in: path
+      required: true
+      schema:
+        type: number
+
+  responses:
+    NoAutorizado:
+      description: No autorizado
+    OrgNoExiste:
+      description: La organización no existe
+    TareaNoExiste:
+      description: La tarea no existe
+    TareaMalaPeticion:
+      description: Definición de tarea errónea
+
+security:
+  - ClaveApiAuth: []
+
+paths:
+  /:
+    post:
+      operationId: crearOrganizacion
+      summary: Da de alta una nueva organización
+      description: >
+        El nombre de recurso de la organización debe ser único entre todas las organizaciones dadas de alta en la API.
+        Esta es una operación pública, por lo que cualquiera puede dar de alta su propia organización y comenzar a usar
+        la API
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organizacion'
+      responses:
+        201:
+          description: Organizacion creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaveApi'
+        400:
+          description: Alguno de los datos de la organización es erróneo o la organización no es única
+
+  /{organizacion}:
+    parameters:
+      - $ref: '#/components/parameters/Organizacion'
+
+    get:
+      operationId: consultarOrganizacion
+      summary: Consulta los datos básicos de una organización
+      description: >
+        No es posible consultar la clave de API con esta consulta. Si necesita recuperar su clave secreta contacte con
+        el administrador
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organizacion'
+        401:
+          $ref: '#/components/responses/NoAutorizado'
+        404:
+          $ref: '#/components/responses/OrgNoExiste'
+
+    delete:
+      operationId: borrarOrganizacion
+      summary: Elimina una organización, sus proyectos y tareas permanentemente
+      responses:
+        204:
+          description: Organización borrada
+        401:
+          $ref: '#/components/responses/NoAutorizado'
+        404:
+          $ref: '#/components/responses/OrgNoExiste'
+
+  /{organizacion}/{proyecto}:
+    parameters:
+      - $ref: '#/components/parameters/Organizacion'
+      - $ref: '#/components/parameters/Proyecto'
+
+    post:
+      operationId: crearTarea
+      summary: Crea una nueva tarea dentro de un proyecto
+      description: >
+        La definición de la tarea debe incluir, por lo menos, la definición básica de una tarea y, opcionalmente,
+        un conjunto de campos personalizados como un par de `"clave": "valor"`
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TareaBase'
+      responses:
+        201:
+          description: Tarea creada
+        400:
+          $ref: '#/components/responses/TareaMalaPeticion'
+        401:
+          $ref: '#/components/responses/NoAutorizado'
+
+    get:
+      operationId: consultarTareasProyecto
+      summary: Consulta el tablero Kanban asociado a un proyecto
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tarea'
+        401:
+          $ref: '#/components/responses/NoAutorizado'
+        404:
+          description: El proyecto o la organización no existe
+
+  /{organizacion}/{proyecto}/{tarea}:
+    parameters:
+      - $ref: '#/components/parameters/Organizacion'
+      - $ref: '#/components/parameters/Proyecto'
+      - $ref: '#/components/parameters/Tarea'
+
+    get:
+      operationId: consultarTarea
+      summary: Consulta una tarea concreta dentro de un proyecto
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarea'
+        401:
+          $ref: '#/components/responses/NoAutorizado'
+        404:
+          $ref: '#/components/responses/TareaNoExiste'
+
+    put:
+      operationId: modificarTarea
+      summary: Modifica una tarea concreta
+      description: |
+        Esta operación sirve para:
+          * Cambiar el estado
+          * Asignar un nuevo responsable
+          * Cambiar la prioridad
+          * Agregar o eliminar etiquetas
+          * Agregar o eliminar campos personalizados por el usuario
+
+        No es posible cambiar el identificador o el proyecto asociado a una tarea
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                $ref: '#/components/schemas/TareaBase'
+      responses:
+        204:
+          description: Tarea actualizada
+        400:
+          $ref: '#/components/responses/TareaMalaPeticion'
+        401:
+          $ref: '#/components/responses/NoAutorizado'
+        404:
+          $ref: '#/components/responses/TareaNoExiste'
+
+    delete:
+      operationId: eliminarTarea
+      summary: Elimina una tarea definitivamente
+      responses:
+        204:
+          description: Tarea eliminada
+        401:
+          $ref: '#/components/responses/NoAutorizado'
+        404:
+          $ref: '#/components/responses/TareaNoExiste'
