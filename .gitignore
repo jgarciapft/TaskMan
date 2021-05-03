@@ -1,16 +1,8 @@
-### Example user template template
-### Example user template
-
 # IntelliJ project files
 .idea
 *.iml
 out
 gen
-### Example user template template
-### Example user template
 
-# IntelliJ project files
-### Example user template template
-### Example user template
-
-# IntelliJ project files
+/AWS/Lambda/LambdaAuthorizer/node_modules/
+/.aws-sam/
