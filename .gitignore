@@ -4,5 +4,8 @@
 out
 gen
 
-/AWS/Lambda/LambdaAuthorizer/node_modules/
 /.aws-sam/
+/AWS/Lambda/LambdaAuthorizer/node_modules/
+
+/AWS/Lambda/layers/azure-promisified/nodejs/node_modules/*
+!AWS/Lambda/layers/azure-promisified/nodejs/node_modules/azure-promisified
