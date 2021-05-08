@@ -6,7 +6,7 @@ info:
     Una API para la gestión de tareas dentro organizaciones organizadas en proyectos. Se ofrece un tablero Kanban por
     organización. La definición de tareas es extensible, permitiendo agregar campos adicionales definidos por el usuario
 servers:
-  - url: 'https://ribw.jgarciapft.live/'
+  - url: 'https://ribw.jnpblgpz.live/'
     description: Servidor de producción
 components:
   securitySchemes:
@@ -184,7 +184,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Organizacion'
-        401:
+        400:
+          description: Nombre de recurso mal formado
+        403:
           $ref: '#/components/responses/NoAutorizado'
         404:
           $ref: '#/components/responses/OrgNoExiste'
@@ -195,7 +197,7 @@ paths:
       responses:
         204:
           description: Organización borrada
-        401:
+        403:
           $ref: '#/components/responses/NoAutorizado'
         404:
           $ref: '#/components/responses/OrgNoExiste'
@@ -222,7 +224,7 @@ paths:
           description: Tarea creada
         400:
           $ref: '#/components/responses/TareaMalaPeticion'
-        401:
+        403:
           $ref: '#/components/responses/NoAutorizado'
 
     get:
@@ -237,7 +239,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Tarea'
-        401:
+        403:
           $ref: '#/components/responses/NoAutorizado'
         404:
           description: El proyecto o la organización no existe
@@ -258,7 +260,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Tarea'
-        401:
+        403:
           $ref: '#/components/responses/NoAutorizado'
         404:
           $ref: '#/components/responses/TareaNoExiste'
@@ -286,7 +288,7 @@ paths:
           description: Tarea actualizada
         400:
           $ref: '#/components/responses/TareaMalaPeticion'
-        401:
+        403:
           $ref: '#/components/responses/NoAutorizado'
         404:
           $ref: '#/components/responses/TareaNoExiste'
@@ -297,7 +299,7 @@ paths:
       responses:
         204:
           description: Tarea eliminada
-        401:
+        403:
           $ref: '#/components/responses/NoAutorizado'
         404:
           $ref: '#/components/responses/TareaNoExiste'

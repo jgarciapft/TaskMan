@@ -2,8 +2,7 @@ const {
     retrieveOrganizationApiKey,
 } = require('azure-promisified')
 
-exports.handler = async event => {
-    const {authorizationToken, methodArn} = event;
+exports.handler = async ({authorizationToken, methodArn}) => {
     const requestedOrg = extractRootResourceFromMethodArn(methodArn);
     const denyPolicy = generatePolicy(requestedOrg, 'Deny', methodArn);
 

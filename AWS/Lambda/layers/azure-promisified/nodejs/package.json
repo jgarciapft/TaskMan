@@ -1,7 +1,0 @@
-{
-  "name": "TaskMan-LambdaLayers-AzurePromisified",
-  "version": "1.0.0",
-  "dependencies": {
-    "azure-storage": "^2.10.3"
-  }
-}
