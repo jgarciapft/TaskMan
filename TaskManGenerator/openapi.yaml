@@ -1,0 +1,71 @@
+openapi: 3.0.3
+info:
+  title: TaskManGenerator
+  description: Un generador de definiciones de tarea aleatorios para TaskMan
+  version: 1.0.0
+servers:
+  - url: 'https://ribw.jnpblgpz.live/taskmangen'
+    description: Servidor de producción
+components:
+  schemas:
+    TareaGenerada:
+      type: object
+      description: La definición de una tarea generada automáticamente y lista para ser dada de alta en TaskMan
+      properties:
+        titulo:
+          type: string
+        descripcion:
+          type: string
+        estado:
+          type: string
+          enum:
+            - abierta
+            - en progreso
+            - lista
+            - archivada
+          default:
+            abierta
+        autor:
+          type: string
+        responsable:
+          type: string
+        prioridad:
+          type: string
+          enum:
+            - muy baja
+            - baja
+            - media
+            - alta
+            - muy alta
+          default:
+            media
+        etiquetas:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+      additionalProperties: true
+      required:
+        - titulo
+        - autor
+        - prioridad
+paths:
+  /:
+    get:
+      parameters:
+        - description: Cuántas tareas generar
+          name: count
+          in: query
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TareaGenerada'
+        400:
+          description: La cuenta de tareas no es un número válido

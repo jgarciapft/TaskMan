@@ -11,3 +11,4 @@ gen
 !AWS/Lambda/layers/azure-promisified/nodejs/node_modules/azure-promisified
 /AWS/Lambda/layers/azure-promisified/nodejs/node_modules/azure-promisified/node_modules/
 /AWS/Lambda/layers/utils/nodejs/node_modules/
+/TaskManGenerator/AWS/Lambda/TaskManGenerator-TaskGenerator/node_modules/
