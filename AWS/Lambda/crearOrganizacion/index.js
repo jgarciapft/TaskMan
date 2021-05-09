@@ -1,7 +1,10 @@
 const {
     createNewOrganization,
     organizationExists,
-    createTable
+    createTable,
+    createEntity,
+    deleteEntity,
+    azureEntityGenerator
 } = require('azure-promisified')
 const {camelCase} = require('lodash')
 
@@ -14,8 +17,11 @@ exports.handler = async ({body}) => {
     if (await organizationExists(inputOrgModel.nombreRecurso))
         return apiGwResponse(400, 'La organización ya existe');
 
+    const tableNameForOrg = camelCase(inputOrgModel.nombreRecurso);
+
     try {
-        await createTable(camelCase(inputOrgModel.nombreRecurso))
+        await createTable(tableNameForOrg)
+        await createEntity(tableNameForOrg, initMetadata());
 
         return apiGwResponse(201,
             {
@@ -23,6 +29,8 @@ exports.handler = async ({body}) => {
                 claveApi: await createNewOrganization(inputOrgModel)
             });
     } catch (e) {
+        await deleteTable(tableNameForOrg);
+        await deleteEntity(tableNameForOrg, initMetadata().PartitionKey, initMetadata().RowKey);
         return apiGwResponse(500, 'Algo fue mal. Inténtelo más tarde');
     }
 }
@@ -32,6 +40,14 @@ function validateOrganizationModel(orgModel) {
         orgModel.nombreCompleto &&
         orgModel.nombreRecurso &&
         /^[a-z_]+$/.test(orgModel.nombreRecurso);
+}
+
+function initMetadata() {
+    return {
+        PartitionKey: azureEntityGenerator.String('_metadata'),
+        RowKey: azureEntityGenerator.String('secuenciaTarea'),
+        valor: azureEntityGenerator.Int32(1)
+    };
 }
 
 function apiGwResponse(statusCode, body) {

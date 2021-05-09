@@ -223,9 +223,11 @@ paths:
         201:
           description: Tarea creada
         400:
-          $ref: '#/components/responses/TareaMalaPeticion'
+          description: Definición de tarea errónea o nombre de proyecto mal formado
         403:
           $ref: '#/components/responses/NoAutorizado'
+        404:
+          $ref: '#/components/responses/OrgNoExiste'
 
     get:
       operationId: consultarTareasProyecto
@@ -239,6 +241,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Tarea'
+        400:
+          description: Nombre de proyecto mal formado
         403:
           $ref: '#/components/responses/NoAutorizado'
         404:
