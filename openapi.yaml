@@ -6,7 +6,7 @@ info:
     Una API para la gestión de tareas dentro organizaciones organizadas en proyectos. Se ofrece un tablero Kanban por
     organización. La definición de tareas es extensible, permitiendo agregar campos adicionales definidos por el usuario
 servers:
-  - url: 'https://ribw.jnpblgpz.live/'
+  - url: 'https://ribw.jnpblgpz.live/taskman'
     description: Servidor de producción
 components:
   securitySchemes:
@@ -264,6 +264,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Tarea'
+        400:
+          description: La organización, el proyecto o el identificador de la tarea está mal formado
         403:
           $ref: '#/components/responses/NoAutorizado'
         404:
@@ -303,6 +305,8 @@ paths:
       responses:
         204:
           description: Tarea eliminada
+        400:
+          description: La organización, el proyecto o el identificador de la tarea está mal formado
         403:
           $ref: '#/components/responses/NoAutorizado'
         404:

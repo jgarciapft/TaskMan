@@ -1,10 +1,10 @@
 const {
     organizationExists,
-    queryTasksOfProject,
+    deleteTask
 } = require('azure-promisified')
 
 exports.handler = async ({pathParameters}) => {
-    const {organizacion, proyecto} = pathParameters;
+    const {organizacion, proyecto, tarea} = pathParameters;
 
     if (!organizacion || !await organizationExists(organizacion))
         return apiGwResponse(404, 'La organización no existe');
@@ -12,10 +12,14 @@ exports.handler = async ({pathParameters}) => {
     if (!proyecto || proyecto.startsWith('_') || proyecto.length < 3)
         return apiGwResponse(400, 'Nombre de proyecto mal formado')
 
+    if (!tarea || !/^[1-9][0-9]*$/.test(tarea))
+        return apiGwResponse(400, 'Identificador de la tarea mal formado')
+
     try {
-        return apiGwResponse(200, await queryTasksOfProject(organizacion, proyecto));
+        await deleteTask(organizacion, proyecto, tarea);
+        return apiGwResponse(204, 'Tarea eliminada');
     } catch (e) {
-        return apiGwResponse(500, 'Algo fue mal. Inténtelo más tarde. Puede que el proyecto no exista');
+        return apiGwResponse(404, 'La tarea no existe');
     }
 };
 
